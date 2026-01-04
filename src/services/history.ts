@@ -1,6 +1,5 @@
 import { networks, type NetworkType } from '../config/networks';
 import type { HistoryResponse, TransferHistoryItem, TransactionAction } from '../types';
-import tokens from '../config/tokens.json';
 
 function parseQuantity(quantity: string): { amount: string; symbol: string } {
   const parts = quantity.split(' ');
@@ -30,11 +29,6 @@ function mapActionToHistoryItem(
   };
 }
 
-function buildFilterString(): string {
-  const contracts = [...new Set(tokens.map((t) => t.contract))];
-  return contracts.map((c) => `${c}:transfer`).join(',');
-}
-
 export async function fetchTransferHistory(
   account: string,
   network: NetworkType,
@@ -45,7 +39,9 @@ export async function fetchTransferHistory(
 ): Promise<{ transfers: TransferHistoryItem[]; total: number }> {
   const { limit = 20, skip = 0 } = options;
   const config = networks[network];
-  const filter = buildFilterString();
+
+  // Filter for common token transfer actions
+  const filter = 'eosio.token:transfer,xtokens:transfer,loan.token:transfer,xmd.token:transfer';
 
   const params = new URLSearchParams({
     account,

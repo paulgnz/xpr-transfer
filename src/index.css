@@ -12,6 +12,9 @@
   --color-border: #334155;
   --color-success: #22c55e;
   --color-error: #ef4444;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
 }
 
 body {
@@ -24,4 +27,17 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }
