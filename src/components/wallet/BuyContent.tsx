@@ -115,20 +115,20 @@ export function BuyContent() {
         </p>
         <div className="flex gap-2">
           <a
-            href="https://app.metalx.com/trade"
+            href="https://app.metalx.com/dex/XPR_XMD?referrer=protonnz"
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 py-2 text-center text-sm bg-surface hover:bg-surface-hover border border-border rounded-lg transition-colors"
           >
-            MetalX Exchange
+            Metal X
           </a>
           <a
-            href="https://www.metalpay.com"
+            href="https://m.tl/pay"
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 py-2 text-center text-sm bg-surface hover:bg-surface-hover border border-border rounded-lg transition-colors"
           >
-            Metal Pay App
+            Metal Pay
           </a>
         </div>
       </div>
@@ -141,29 +141,24 @@ interface FallbackOptionsProps {
 }
 
 function FallbackOptions({ accountName }: FallbackOptionsProps) {
-  const handleBuyWithMetalPay = () => {
-    const url = accountName
-      ? `https://app.metalpay.com/buy?asset=XPR&address=${accountName}`
-      : 'https://app.metalpay.com/buy?asset=XPR';
-    window.open(url, '_blank');
-  };
-
   return (
     <div className="space-y-3">
-      <button
-        onClick={handleBuyWithMetalPay}
+      <a
+        href="https://m.tl/pay"
+        target="_blank"
+        rel="noopener noreferrer"
         className="w-full py-3 bg-primary hover:bg-primary-hover rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
       >
         <span>Open Metal Pay</span>
-      </button>
+      </a>
 
       <a
-        href="https://app.metalx.com/trade"
+        href="https://app.metalx.com/dex/XPR_XMD?referrer=protonnz"
         target="_blank"
         rel="noopener noreferrer"
         className="w-full py-3 bg-surface hover:bg-surface-hover border border-border rounded-lg font-medium transition-colors block text-center"
       >
-        Trade on MetalX Exchange
+        Trade on Metal X
       </a>
 
       {accountName && (
