@@ -1,7 +1,71 @@
 import type { LinkSession } from '@proton/web-sdk';
 import type { TransferResult } from '../types';
+import { networks, type NetworkType } from '../config/networks';
 
 export interface StakeResult extends TransferResult {}
+
+export interface ClaimableRewards {
+  amount: number;
+  lastClaim: string;
+}
+
+/**
+ * Fetch claimable staking rewards for an account
+ */
+export async function fetchClaimableRewards(
+  account: string,
+  network: NetworkType
+): Promise<ClaimableRewards | null> {
+  const config = networks[network];
+  const endpoint = config.endpoints[0];
+
+  try {
+    const response = await fetch(`${endpoint}/v1/chain/get_table_rows`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        json: true,
+        code: 'eosio',
+        scope: 'eosio',
+        table: 'votersxpr',
+        lower_bound: account,
+        upper_bound: account,
+        limit: 1,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch rewards');
+    }
+
+    const data = await response.json();
+
+    if (data.rows && data.rows.length > 0) {
+      const row = data.rows[0];
+
+      // Verify this is the correct account
+      if (row.owner !== account) {
+        return null;
+      }
+
+      // claimamount is a raw integer, divide by 10000 for 4 decimal places
+      const rawAmount = parseInt(row.claimamount, 10) || 0;
+      const amount = rawAmount / 10000;
+
+      return {
+        amount,
+        lastClaim: row.lastclaim || '',
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Failed to fetch claimable rewards:', error);
+    return null;
+  }
+}
 
 export function formatXprQuantity(amount: string): string {
   const num = parseFloat(amount);

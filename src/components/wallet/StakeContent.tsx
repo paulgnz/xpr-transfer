@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWalletStore, useAccountName } from '../../stores/walletStore';
 import { useTokenBalances } from '../../stores/balanceStore';
-import { stakeXPR, unstakeXPR, claimRefund, claimStakingRewards } from '../../services/staking';
+import { stakeXPR, unstakeXPR, claimRefund, claimStakingRewards, fetchClaimableRewards } from '../../services/staking';
 import { formatBalance } from '../../services/balances';
 
 type TabType = 'stake' | 'unstake';
@@ -16,10 +16,32 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [claimableRewards, setClaimableRewards] = useState<number>(0);
+  const [isLoadingRewards, setIsLoadingRewards] = useState(false);
 
   const session = useWalletStore((state) => state.session);
+  const network = useWalletStore((state) => state.network);
   const accountName = useAccountName();
   const tokens = useTokenBalances();
+
+  // Fetch claimable rewards
+  useEffect(() => {
+    const loadRewards = async () => {
+      if (!accountName) return;
+
+      setIsLoadingRewards(true);
+      try {
+        const rewards = await fetchClaimableRewards(accountName, network);
+        setClaimableRewards(rewards?.amount || 0);
+      } catch (err) {
+        console.error('Failed to load rewards:', err);
+      } finally {
+        setIsLoadingRewards(false);
+      }
+    };
+
+    loadRewards();
+  }, [accountName, network]);
 
   // Find XPR balances
   const xprToken = tokens.find((t) => t.symbol === 'XPR' && !t.isStaked);
@@ -94,7 +116,15 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
     try {
       const result = await claimStakingRewards(session);
       setSuccess(`Rewards claimed! TX: ${result.transactionId.slice(0, 8)}...`);
+      setClaimableRewards(0); // Reset claimable rewards
       onSuccess?.();
+      // Refresh rewards amount after a short delay
+      setTimeout(async () => {
+        if (accountName) {
+          const rewards = await fetchClaimableRewards(accountName, network);
+          setClaimableRewards(rewards?.amount || 0);
+        }
+      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No rewards available or claim failed');
     } finally {
@@ -157,10 +187,20 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
             {formatBalance(availableXpr, 4)} XPR
           </span>
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-sm mb-2">
           <span className="text-text-muted">Staked XPR</span>
           <span className="text-text font-medium">
             {formatBalance(stakedXpr, 4)} XPR
+          </span>
+        </div>
+        <div className="flex justify-between text-sm pt-2 border-t border-border">
+          <span className="text-success">Claimable Rewards</span>
+          <span className="text-success font-medium">
+            {isLoadingRewards ? (
+              <span className="animate-pulse">Loading...</span>
+            ) : (
+              `${formatBalance(claimableRewards, 4)} XPR`
+            )}
           </span>
         </div>
       </div>
@@ -236,10 +276,12 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
         <div className="flex gap-2">
           <button
             onClick={handleClaimRewards}
-            disabled={isLoading}
-            className="flex-1 py-3 bg-success/20 hover:bg-success/30 text-success border border-success/30 rounded-lg font-medium transition-colors"
+            disabled={isLoading || claimableRewards <= 0}
+            className="flex-1 py-3 bg-success/20 hover:bg-success/30 disabled:bg-gray-600/20 text-success disabled:text-gray-500 border border-success/30 disabled:border-gray-600 rounded-lg font-medium transition-colors"
           >
-            Claim Rewards
+            {claimableRewards > 0
+              ? `Claim ${formatBalance(claimableRewards, 4)} XPR`
+              : 'No Rewards'}
           </button>
           {activeTab === 'unstake' && (
             <button
@@ -254,11 +296,13 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
       </div>
 
       {/* Rewards info */}
-      <div className="bg-success/10 border border-success/20 rounded-lg p-3">
-        <p className="text-sm text-text">
-          Staking rewards are earned based on your staked XPR and voting participation. Claim your rewards anytime!
-        </p>
-      </div>
+      {claimableRewards > 0 && (
+        <div className="bg-success/10 border border-success/20 rounded-lg p-3">
+          <p className="text-sm text-text">
+            You have <span className="text-success font-medium">{formatBalance(claimableRewards, 4)} XPR</span> in staking rewards ready to claim!
+          </p>
+        </div>
+      )}
 
       {/* Account info */}
       {accountName && (
