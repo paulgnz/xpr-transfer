@@ -44,7 +44,7 @@ export function WalletTabs({ onTokenSelect }: WalletTabsProps) {
 
   return (
     <div className="bg-surface rounded-t-3xl -mt-4 pt-6 min-h-[50vh]">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="px-4">
         {/* Tabs */}
         <div className="flex border-b border-border mb-4">
           <button

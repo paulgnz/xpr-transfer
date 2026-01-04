@@ -22,7 +22,7 @@ export function WalletHeader({ onSend, onReceive, onBuy }: WalletHeaderProps) {
 
   return (
     <div className="bg-gradient-to-b from-gray-900 to-gray-800 text-white pb-6">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="px-4">
         {/* Top bar */}
         <div className="flex items-center justify-between py-4">
           <NetworkToggle />

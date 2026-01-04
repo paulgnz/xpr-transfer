@@ -48,29 +48,32 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <WalletHeader
-        onSend={() => {
-          setSelectedToken(null);
-          setShowSendModal(true);
-        }}
-        onReceive={() => setShowReceiveModal(true)}
-        onBuy={() => setShowBuyModal(true)}
-      />
+    <div className="min-h-screen bg-background-dark flex justify-center">
+      {/* Mobile-width container */}
+      <div className="w-full max-w-[430px] min-h-screen bg-background shadow-2xl">
+        <WalletHeader
+          onSend={() => {
+            setSelectedToken(null);
+            setShowSendModal(true);
+          }}
+          onReceive={() => setShowReceiveModal(true)}
+          onBuy={() => setShowBuyModal(true)}
+        />
 
-      <WalletTabs onTokenSelect={handleTokenSelect} />
+        <WalletTabs onTokenSelect={handleTokenSelect} />
 
-      {/* History link for connected users */}
-      {isConnected && (
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <button
-            onClick={() => setShowHistoryModal(true)}
-            className="w-full py-3 text-center text-secondary hover:underline text-sm"
-          >
-            View Transaction History
-          </button>
-        </div>
-      )}
+        {/* History link for connected users */}
+        {isConnected && (
+          <div className="px-4 py-4">
+            <button
+              onClick={() => setShowHistoryModal(true)}
+              className="w-full py-3 text-center text-secondary hover:underline text-sm"
+            >
+              View Transaction History
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Send Modal */}
       <Modal

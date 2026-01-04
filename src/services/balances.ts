@@ -24,10 +24,11 @@ export async function fetchAccountBalances(
   network: NetworkType
 ): Promise<TokenBalance[]> {
   const config = networks[network];
+  const chain = network === 'mainnet' ? 'proton' : 'proton-test';
 
   try {
     const response = await fetch(
-      `${config.lightApi}/api/balances/proton/${account}`
+      `${config.lightApi}/api/account/${chain}/${account}`
     );
 
     if (!response.ok) {
