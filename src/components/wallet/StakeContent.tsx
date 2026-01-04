@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useWalletStore, useAccountName } from '../../stores/walletStore';
 import { useTokenBalances } from '../../stores/balanceStore';
-import { stakeXPR, unstakeXPR, claimRefund, claimStakingRewards, fetchClaimableRewards } from '../../services/staking';
+import { stakeXPR, unstakeXPR, claimRefund, claimStakingRewards, fetchClaimableRewards, fetchStakingAPY } from '../../services/staking';
 import { formatBalance } from '../../services/balances';
 
 type TabType = 'stake' | 'unstake';
@@ -18,13 +18,14 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
   const [success, setSuccess] = useState<string | null>(null);
   const [claimableRewards, setClaimableRewards] = useState<number>(0);
   const [isLoadingRewards, setIsLoadingRewards] = useState(false);
+  const [stakingAPY, setStakingAPY] = useState<number | null>(null);
 
   const session = useWalletStore((state) => state.session);
   const network = useWalletStore((state) => state.network);
   const accountName = useAccountName();
   const tokens = useTokenBalances();
 
-  // Fetch claimable rewards
+  // Fetch claimable rewards and APY
   useEffect(() => {
     const loadRewards = async () => {
       if (!accountName) return;
@@ -40,7 +41,17 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
       }
     };
 
+    const loadAPY = async () => {
+      try {
+        const apyData = await fetchStakingAPY(network);
+        setStakingAPY(apyData?.apyPercent || null);
+      } catch (err) {
+        console.error('Failed to load APY:', err);
+      }
+    };
+
     loadRewards();
+    loadAPY();
   }, [accountName, network]);
 
   // Find XPR balances
@@ -193,6 +204,20 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
             {formatBalance(stakedXpr, 4)} XPR
           </span>
         </div>
+        <div className="flex justify-between text-sm mb-2">
+          <span className="text-text-muted">Estimated APY</span>
+          <span className="text-primary font-medium">
+            {stakingAPY !== null ? `${stakingAPY.toFixed(2)}%` : '—'}
+          </span>
+        </div>
+        {stakedXpr > 0 && stakingAPY !== null && (
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-text-muted">Est. Annual Rewards</span>
+            <span className="text-text font-medium">
+              ~{formatBalance(stakedXpr * (stakingAPY / 100), 4)} XPR
+            </span>
+          </div>
+        )}
         <div className="flex justify-between text-sm pt-2 border-t border-border">
           <span className="text-success">Claimable Rewards</span>
           <span className="text-success font-medium">

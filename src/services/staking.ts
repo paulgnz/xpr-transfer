@@ -9,6 +9,69 @@ export interface ClaimableRewards {
   lastClaim: string;
 }
 
+export interface StakingAPY {
+  apy: number; // Annual percentage yield as decimal (e.g., 0.05 = 5%)
+  apyPercent: number; // APY as percentage (e.g., 5.0)
+}
+
+/**
+ * Fetch current staking APY from the global4 table
+ */
+export async function fetchStakingAPY(
+  network: NetworkType
+): Promise<StakingAPY | null> {
+  const config = networks[network];
+  const endpoint = config.endpoints[0];
+
+  try {
+    const response = await fetch(`${endpoint}/v1/chain/get_table_rows`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        json: true,
+        code: 'eosio',
+        scope: 'eosio',
+        table: 'global4',
+        limit: 1,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch APY');
+    }
+
+    const data = await response.json();
+
+    if (data.rows && data.rows.length > 0) {
+      const row = data.rows[0];
+
+      // The APY is typically stored as continuous_rate or similar field
+      // Convert from continuous rate to APY if needed
+      let apy = 0;
+
+      if (row.continuous_rate !== undefined) {
+        // continuous_rate is typically a decimal like "0.04879016416"
+        apy = parseFloat(row.continuous_rate) || 0;
+      } else if (row.voter_xpr_inflation !== undefined) {
+        // Alternative field name
+        apy = parseFloat(row.voter_xpr_inflation) || 0;
+      }
+
+      return {
+        apy,
+        apyPercent: apy * 100,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Failed to fetch staking APY:', error);
+    return null;
+  }
+}
+
 /**
  * Fetch claimable staking rewards for an account
  */

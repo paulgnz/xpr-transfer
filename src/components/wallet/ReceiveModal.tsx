@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useAccountName } from '../../stores/walletStore';
 
 export function ReceiveContent() {
@@ -17,11 +18,9 @@ export function ReceiveContent() {
 
   return (
     <div className="flex flex-col items-center py-6">
-      {/* QR Code placeholder */}
-      <div className="w-48 h-48 bg-white rounded-xl p-4 mb-6">
-        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs text-center">
-          QR Code<br />(Coming soon)
-        </div>
+      {/* QR Code */}
+      <div className="bg-white rounded-xl p-4 mb-6">
+        <QRCodeSVG value={accountName} size={176} level="M" />
       </div>
 
       {/* Account name */}
