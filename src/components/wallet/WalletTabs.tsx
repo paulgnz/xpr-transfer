@@ -145,10 +145,12 @@ interface TokenRowProps {
 function TokenRow({ token, onClick }: TokenRowProps) {
   return (
     <button
-      onClick={onClick}
-      className="w-full flex items-center gap-4 py-3 px-2 hover:bg-surface-hover rounded-lg transition-colors"
+      onClick={token.isStaked ? undefined : onClick}
+      className={`w-full flex items-center gap-4 py-3 px-2 rounded-lg transition-colors ${
+        token.isStaked ? 'cursor-default' : 'hover:bg-surface-hover'
+      }`}
     >
-      <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden flex-shrink-0">
+      <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden flex-shrink-0 relative">
         {token.logo ? (
           <img
             src={token.logo}
@@ -163,10 +165,22 @@ function TokenRow({ token, onClick }: TokenRowProps) {
             {token.symbol.slice(0, 2)}
           </div>
         )}
+        {token.isStaked && (
+          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-xs">
+            🔒
+          </div>
+        )}
       </div>
 
       <div className="flex-1 text-left">
-        <p className="font-medium text-text">{token.name}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-text">{token.name}</p>
+          {token.isStaked && (
+            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">
+              Staked
+            </span>
+          )}
+        </div>
         <p className="text-sm text-text-muted">
           {token.price > 0 ? `$${token.price.toFixed(token.price < 0.01 ? 8 : 2)}` : '-'}
         </p>

@@ -5,6 +5,7 @@ export interface TokenBalance {
   symbol: string;
   amount: string;
   decimals: number;
+  isStaked?: boolean;
 }
 
 interface LightApiBalance {
@@ -19,6 +20,44 @@ interface LightApiResponse {
   balances: LightApiBalance[];
 }
 
+interface HyperionAccountResponse {
+  account?: {
+    voter_info?: {
+      staked?: string | number;
+    };
+  };
+}
+
+async function fetchStakedXPR(
+  account: string,
+  network: NetworkType
+): Promise<number> {
+  const config = networks[network];
+
+  try {
+    const response = await fetch(
+      `${config.hyperion}/v2/state/get_account?account=${account}`
+    );
+
+    if (!response.ok) {
+      return 0;
+    }
+
+    const data: HyperionAccountResponse = await response.json();
+    const staked = data.account?.voter_info?.staked;
+
+    if (staked) {
+      // Staked amount is in units (divide by 10000 for 4 decimal places)
+      return typeof staked === 'string' ? parseInt(staked, 10) / 10000 : staked / 10000;
+    }
+
+    return 0;
+  } catch (error) {
+    console.error('Failed to fetch staked XPR:', error);
+    return 0;
+  }
+}
+
 export async function fetchAccountBalances(
   account: string,
   network: NetworkType
@@ -27,22 +66,37 @@ export async function fetchAccountBalances(
   const chain = network === 'mainnet' ? 'proton' : 'proton-test';
 
   try {
-    const response = await fetch(
-      `${config.lightApi}/api/account/${chain}/${account}`
-    );
+    // Fetch balances and staked XPR in parallel
+    const [balancesResponse, stakedAmount] = await Promise.all([
+      fetch(`${config.lightApi}/api/account/${chain}/${account}`),
+      fetchStakedXPR(account, network),
+    ]);
 
-    if (!response.ok) {
+    if (!balancesResponse.ok) {
       throw new Error('Failed to fetch balances');
     }
 
-    const data: LightApiResponse = await response.json();
+    const data: LightApiResponse = await balancesResponse.json();
 
-    return data.balances.map((balance) => ({
+    const balances: TokenBalance[] = data.balances.map((balance) => ({
       contract: balance.contract,
       symbol: balance.currency,
       amount: balance.amount,
       decimals: parseInt(balance.decimals, 10),
     }));
+
+    // Add staked XPR as a separate entry if there's any staked
+    if (stakedAmount > 0) {
+      balances.push({
+        contract: 'eosio.token',
+        symbol: 'XPR',
+        amount: stakedAmount.toFixed(4),
+        decimals: 4,
+        isStaked: true,
+      });
+    }
+
+    return balances;
   } catch (error) {
     console.error('Failed to fetch account balances:', error);
     return [];

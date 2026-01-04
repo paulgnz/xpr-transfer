@@ -12,6 +12,7 @@ export interface TokenWithBalance {
   decimals: number;
   price: number;
   usdValue: number;
+  isStaked?: boolean;
 }
 
 interface BalanceState {
@@ -76,12 +77,13 @@ export const useBalanceStore = create<BalanceStore>()((set) => ({
         tokensWithBalance.push({
           contract: balance.contract,
           symbol: balance.symbol,
-          name: metadata?.name || balance.symbol,
+          name: balance.isStaked ? 'Staked XPR' : (metadata?.name || balance.symbol),
           logo: metadata?.logo || '',
           balance: balanceAmount,
           decimals: balance.decimals,
           price,
           usdValue,
+          isStaked: balance.isStaked,
         });
       });
 
