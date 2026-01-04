@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWalletStore, useAccountName } from '../../stores/walletStore';
 import { useTokenBalances } from '../../stores/balanceStore';
-import { stakeXPR, unstakeXPR, claimRefund } from '../../services/staking';
+import { stakeXPR, unstakeXPR, claimRefund, claimStakingRewards } from '../../services/staking';
 import { formatBalance } from '../../services/balances';
 
 type TabType = 'stake' | 'unstake';
@@ -79,6 +79,24 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
       onSuccess?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No refund available or claim failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClaimRewards = async () => {
+    if (!session) return;
+
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const result = await claimStakingRewards(session);
+      setSuccess(`Rewards claimed! TX: ${result.transactionId.slice(0, 8)}...`);
+      onSuccess?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No rewards available or claim failed');
     } finally {
       setIsLoading(false);
     }
@@ -214,15 +232,32 @@ export function StakeContent({ onSuccess }: StakeContentProps) {
           )}
         </button>
 
-        {activeTab === 'unstake' && (
+        {/* Claim buttons */}
+        <div className="flex gap-2">
           <button
-            onClick={handleClaimRefund}
+            onClick={handleClaimRewards}
             disabled={isLoading}
-            className="w-full py-3 bg-surface hover:bg-surface-hover border border-border rounded-lg font-medium transition-colors"
+            className="flex-1 py-3 bg-success/20 hover:bg-success/30 text-success border border-success/30 rounded-lg font-medium transition-colors"
           >
-            Claim Refund
+            Claim Rewards
           </button>
-        )}
+          {activeTab === 'unstake' && (
+            <button
+              onClick={handleClaimRefund}
+              disabled={isLoading}
+              className="flex-1 py-3 bg-surface hover:bg-surface-hover border border-border rounded-lg font-medium transition-colors"
+            >
+              Claim Refund
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Rewards info */}
+      <div className="bg-success/10 border border-success/20 rounded-lg p-3">
+        <p className="text-sm text-text">
+          Staking rewards are earned based on your staked XPR and voting participation. Claim your rewards anytime!
+        </p>
       </div>
 
       {/* Account info */}

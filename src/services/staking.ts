@@ -147,3 +147,41 @@ export async function claimRefund(
     blockNum: result.processed.block_num,
   };
 }
+
+/**
+ * Claim short staking rewards
+ * Uses the eosio::voterclaim action
+ */
+export async function claimStakingRewards(
+  session: LinkSession
+): Promise<StakeResult> {
+  const account = session.auth.actor.toString();
+
+  const action = {
+    account: 'eosio',
+    name: 'voterclaim',
+    authorization: [
+      {
+        actor: session.auth.actor,
+        permission: session.auth.permission,
+      },
+    ],
+    data: {
+      owner: account,
+    },
+  };
+
+  const result = await session.transact(
+    { actions: [action] },
+    { broadcast: true }
+  );
+
+  if (!result.processed?.id) {
+    throw new Error('Rewards claim failed - no transaction ID returned');
+  }
+
+  return {
+    transactionId: result.processed.id,
+    blockNum: result.processed.block_num,
+  };
+}
