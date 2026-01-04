@@ -7,6 +7,7 @@ import { Modal } from './components/wallet/Modal';
 import { SendForm } from './components/transfer/SendForm';
 import { ReceiveContent } from './components/wallet/ReceiveModal';
 import { BuyContent } from './components/wallet/BuyContent';
+import { StakeContent } from './components/wallet/StakeContent';
 import { TransactionList } from './components/history/TransactionList';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
   const [showSendModal, setShowSendModal] = useState(false);
   const [showReceiveModal, setShowReceiveModal] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
+  const [showStakeModal, setShowStakeModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedToken, setSelectedToken] = useState<TokenWithBalance | null>(null);
 
@@ -47,6 +49,13 @@ function App() {
     }
   };
 
+  const handleStakeSuccess = () => {
+    // Refresh balances after successful stake/unstake
+    if (accountName) {
+      fetchBalances(accountName, network);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background-dark flex justify-center">
       {/* Mobile-width container */}
@@ -58,6 +67,7 @@ function App() {
           }}
           onReceive={() => setShowReceiveModal(true)}
           onBuy={() => setShowBuyModal(true)}
+          onStake={() => setShowStakeModal(true)}
         />
 
         <WalletTabs onTokenSelect={handleTokenSelect} />
@@ -100,6 +110,15 @@ function App() {
         title="Buy Crypto"
       >
         <BuyContent />
+      </Modal>
+
+      {/* Stake Modal */}
+      <Modal
+        isOpen={showStakeModal}
+        onClose={() => setShowStakeModal(false)}
+        title="Stake XPR"
+      >
+        <StakeContent onSuccess={handleStakeSuccess} />
       </Modal>
 
       {/* History Modal */}
