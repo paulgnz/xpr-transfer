@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useWalletStore, useAccountName, useIsConnected } from './stores/walletStore';
 import { useBalanceStore, type TokenWithBalance } from './stores/balanceStore';
 import { WalletHeader } from './components/wallet/WalletHeader';
-import { TokenList } from './components/wallet/TokenList';
+import { WalletTabs } from './components/wallet/WalletTabs';
 import { Modal } from './components/wallet/Modal';
 import { SendForm } from './components/transfer/SendForm';
 import { ReceiveContent } from './components/wallet/ReceiveModal';
+import { BuyContent } from './components/wallet/BuyContent';
 import { TransactionList } from './components/history/TransactionList';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
 
   const [showSendModal, setShowSendModal] = useState(false);
   const [showReceiveModal, setShowReceiveModal] = useState(false);
+  const [showBuyModal, setShowBuyModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedToken, setSelectedToken] = useState<TokenWithBalance | null>(null);
 
@@ -53,9 +55,10 @@ function App() {
           setShowSendModal(true);
         }}
         onReceive={() => setShowReceiveModal(true)}
+        onBuy={() => setShowBuyModal(true)}
       />
 
-      <TokenList onTokenSelect={handleTokenSelect} />
+      <WalletTabs onTokenSelect={handleTokenSelect} />
 
       {/* History link for connected users */}
       {isConnected && (
@@ -85,6 +88,15 @@ function App() {
         title="Receive"
       >
         <ReceiveContent />
+      </Modal>
+
+      {/* Buy Modal */}
+      <Modal
+        isOpen={showBuyModal}
+        onClose={() => setShowBuyModal(false)}
+        title="Buy Crypto"
+      >
+        <BuyContent />
       </Modal>
 
       {/* History Modal */}

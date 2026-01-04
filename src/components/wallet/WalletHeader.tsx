@@ -1,5 +1,5 @@
 import { useTotalBalance, useIsLoadingBalances } from '../../stores/balanceStore';
-import { useIsConnected } from '../../stores/walletStore';
+import { useIsConnected, useAccountName } from '../../stores/walletStore';
 import { formatUsdValue } from '../../services/balances';
 import { NetworkToggle } from './NetworkToggle';
 import { ConnectButton } from './ConnectButton';
@@ -7,12 +7,18 @@ import { ConnectButton } from './ConnectButton';
 interface WalletHeaderProps {
   onSend: () => void;
   onReceive: () => void;
+  onBuy: () => void;
 }
 
-export function WalletHeader({ onSend, onReceive }: WalletHeaderProps) {
+export function WalletHeader({ onSend, onReceive, onBuy }: WalletHeaderProps) {
   const isConnected = useIsConnected();
+  const accountName = useAccountName();
   const totalBalance = useTotalBalance();
   const isLoading = useIsLoadingBalances();
+
+  const handleSwap = () => {
+    window.open('https://app.metalx.com/dex/XPR_XMD?referrer=protonnz', '_blank');
+  };
 
   return (
     <div className="bg-gradient-to-b from-gray-900 to-gray-800 text-white pb-6">
@@ -34,6 +40,9 @@ export function WalletHeader({ onSend, onReceive }: WalletHeaderProps) {
                 formatUsdValue(totalBalance)
               )}
             </h2>
+            {accountName && (
+              <p className="text-sm text-gray-500 mt-2 font-mono">{accountName}</p>
+            )}
           </div>
         )}
 
@@ -42,8 +51,8 @@ export function WalletHeader({ onSend, onReceive }: WalletHeaderProps) {
           <div className="flex justify-center gap-6 mt-4">
             <ActionButton icon="↗" label="Send" onClick={onSend} />
             <ActionButton icon="↓" label="Receive" onClick={onReceive} />
-            <ActionButton icon="$" label="Buy" onClick={() => window.open('https://www.metalx.com', '_blank')} />
-            <ActionButton icon="⇄" label="Swap" onClick={() => window.open('https://www.metalx.com/swap', '_blank')} />
+            <ActionButton icon="$" label="Buy" onClick={onBuy} />
+            <ActionButton icon="⇄" label="Swap" onClick={handleSwap} />
           </div>
         )}
 
