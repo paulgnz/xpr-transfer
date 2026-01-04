@@ -8,6 +8,7 @@ import { SendForm } from './components/transfer/SendForm';
 import { ReceiveContent } from './components/wallet/ReceiveModal';
 import { BuyContent } from './components/wallet/BuyContent';
 import { StakeContent } from './components/wallet/StakeContent';
+import { VoteContent } from './components/wallet/VoteContent';
 import { TransactionList } from './components/history/TransactionList';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
   const [showReceiveModal, setShowReceiveModal] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [showStakeModal, setShowStakeModal] = useState(false);
+  const [showVoteModal, setShowVoteModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedToken, setSelectedToken] = useState<TokenWithBalance | null>(null);
 
@@ -68,6 +70,7 @@ function App() {
           onReceive={() => setShowReceiveModal(true)}
           onBuy={() => setShowBuyModal(true)}
           onStake={() => setShowStakeModal(true)}
+          onVote={() => setShowVoteModal(true)}
         />
 
         <WalletTabs onTokenSelect={handleTokenSelect} />
@@ -119,6 +122,15 @@ function App() {
         title="Stake XPR"
       >
         <StakeContent onSuccess={handleStakeSuccess} />
+      </Modal>
+
+      {/* Vote Modal */}
+      <Modal
+        isOpen={showVoteModal}
+        onClose={() => setShowVoteModal(false)}
+        title="Vote for Producers"
+      >
+        <VoteContent />
       </Modal>
 
       {/* History Modal */}

@@ -9,9 +9,10 @@ interface WalletHeaderProps {
   onReceive: () => void;
   onBuy: () => void;
   onStake: () => void;
+  onVote: () => void;
 }
 
-export function WalletHeader({ onSend, onReceive, onBuy, onStake }: WalletHeaderProps) {
+export function WalletHeader({ onSend, onReceive, onBuy, onStake, onVote }: WalletHeaderProps) {
   const isConnected = useIsConnected();
   const accountName = useAccountName();
   const totalBalance = useTotalBalance();
@@ -49,11 +50,12 @@ export function WalletHeader({ onSend, onReceive, onBuy, onStake }: WalletHeader
 
         {/* Action buttons */}
         {isConnected && (
-          <div className="flex justify-center gap-4 mt-4">
+          <div className="flex justify-center gap-3 mt-4 flex-wrap">
             <ActionButton icon="↗" label="Send" onClick={onSend} />
             <ActionButton icon="↓" label="Receive" onClick={onReceive} />
             <ActionButton icon="$" label="Buy" onClick={onBuy} />
             <ActionButton icon="🔒" label="Stake" onClick={onStake} />
+            <ActionButton icon="🗳" label="Vote" onClick={onVote} />
             <ActionButton icon="⇄" label="Swap" onClick={handleSwap} />
           </div>
         )}
