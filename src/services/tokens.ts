@@ -68,6 +68,19 @@ export async function fetchTokenMetadata(network: NetworkType): Promise<TokenMet
       });
     }
 
+    // Add XMD (Metal Dollar) if not in list
+    const hasXMD = tokens.some((t) => t.symbol === 'XMD' && t.contract === 'xmd.token');
+    if (!hasXMD) {
+      tokens.push({
+        name: 'Metal Dollar',
+        symbol: 'XMD',
+        contract: 'xmd.token',
+        precision: 6,
+        logo: 'https://www.metalx.com/images/coins/xmd.png',
+        price: 1,
+      });
+    }
+
     // Cache tokens
     tokens.forEach((token) => {
       const key = `${token.contract}:${token.symbol}`;
@@ -109,9 +122,13 @@ export async function fetchTokenPrices(tokens: TokenMetadata[]): Promise<Map<str
     const prices: CoinGeckoPrice = await response.json();
 
     tokens.forEach((token) => {
+      const key = `${token.contract}:${token.symbol}`;
       if (token.coingeckoId && prices[token.coingeckoId]) {
-        const key = `${token.contract}:${token.symbol}`;
         priceCache.set(key, prices[token.coingeckoId].usd);
+      }
+      // XMD is always $1 (stablecoin)
+      if (token.symbol === 'XMD' && token.contract === 'xmd.token') {
+        priceCache.set(key, 1);
       }
     });
 
@@ -141,6 +158,14 @@ function getDefaultTokens(): TokenMetadata[] {
       logo: 'https://www.metalx.com/images/coins/xpr.png',
       price: 0,
       coingeckoId: 'proton',
+    },
+    {
+      name: 'Metal Dollar',
+      symbol: 'XMD',
+      contract: 'xmd.token',
+      precision: 6,
+      logo: 'https://www.metalx.com/images/coins/xmd.png',
+      price: 1,
     },
     {
       name: 'USD Coin',
